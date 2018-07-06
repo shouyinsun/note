@@ -126,6 +126,10 @@ Ctrl+B 快速打开光标处的类或方法
 sout +tab: system.out.print
 psvm +tab: public static void main
 
+演出模式：alt+V快捷键，弹出View视图，然后选择Enter Presentation Mode
+
+alt+1 把鼠标焦点定位到project视图里，然后直接使用ctrl+shift+left/right来移动分割线
+
 /*****ideal 注释模板 ***/
 	--类、接口注释
 	settings->Editor->code style->file and code templates
@@ -185,6 +189,26 @@ show create table ouser.u_user;
 -- InnoDB预设是Row-Level Lock,只有「明确」的指定主键,MySQL才会执行Row lock 否则MySQL将会执行Table Lock (将整个资料表单给锁住)
 -- MYISAM 只支持表级锁,InnerDB支持行级锁
 -- MYISAM类型不支持事务处理等高级处理,而InnoDB类型支持  MyISAM类型的表强调的是性能,其执行速度比InnoDB类型更快
+
+
+-- MYISAM跟innodb索引都是基于B+树(也可以是hash)
+主键称为主索引,其他索引是次索引
+MYISAM 主索引跟次索引都指向数据记录的地址(磁盘上位置)
+innodb的数据文件本身就是索引文件,主索引叶子节点的data域保存着完整的数据记录,次索引data域储存的是主键的值
+
+叶节点保存着完整的数据记录,这种索引,称之为聚簇索引,聚簇索引使得基于主键的搜索十分高效,但是次索引需要检索两次,先获得主键,在根据主键检索
+
+innodb索引,不应该使用过长的字段作为主键,因为所有的次索引都会引用主索引,会使次索引变得过大
+而且不应该使用非单调的字段作为索引,会有频繁的分裂调整,使用自增字段就是较好的选择
+
+table A 中 id(主键) 跟 ver是联合索引 (innodb引擎)
+select id from A order by id;//很慢
+select id from A order by id ver;//很快
+innodb 叶节点直接存放数据,数据比较大,内存放不下,放在磁盘,id排序需要跨多个块,比较慢
+联合索引不存放数据,存放的是主键id的值,文件较小,而且只是取出id,不用回行,就是在索引文件中取,较快
+
+如果要查找的数据恰好是索引列,那么就不用去物理磁盘上找了,不用回行,称为索引覆盖
+
 
 	-- 明确指定主键,并且有此笔资料,row lock
 	SELECT * FROM products WHERE id='3' FOR UPDATE;
