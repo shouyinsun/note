@@ -697,10 +697,11 @@ select  AES_DECRYPT(FROM_BASE64(SUBSTRING(mobile,5)),'1fi;qPa7utddahWy')  FROM `
 	ASCII编码实际上可以被看成是UTF-8编码的一部分
 	在计算机内存中,统一使用Unicode编码,当需要保存到硬盘或者需要传输的时候,就转换为UTF-8编码
 	
+	#OuterClass.this
+	实际上我们代指当前类对象的this是个简写形式,完整的形式就是 类名字.this
+	对当前类对象的引用，可以用xxClass.this，也可以直接用this。
+    内部内对当前外部类OuterClass的类对象引用就只能用OuterClass.this，不能用this
 	
-	git commit --amend -m "C:{release2018020101} adminrisk.ppdaicorp.com  riskol.ppdapi.com"
-	
-	git commit  -m "#release2018020101# adminrisk.ppdaicorp.com  riskol.ppdapi.com"
 	
 	
 	
