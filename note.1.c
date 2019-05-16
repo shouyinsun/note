@@ -697,11 +697,78 @@ select  AES_DECRYPT(FROM_BASE64(SUBSTRING(mobile,5)),'1fi;qPa7utddahWy')  FROM `
 	ASCII编码实际上可以被看成是UTF-8编码的一部分
 	在计算机内存中,统一使用Unicode编码,当需要保存到硬盘或者需要传输的时候,就转换为UTF-8编码
 	
-	#OuterClass.this
+	# OuterClass.this
 	实际上我们代指当前类对象的this是个简写形式,完整的形式就是 类名字.this
 	对当前类对象的引用，可以用xxClass.this，也可以直接用this。
     内部内对当前外部类OuterClass的类对象引用就只能用OuterClass.this，不能用this
+
+
+    # UML 类图
+    虚线箭头指向依赖；
+	实线箭头指向关联；
+	虚线三角指向接口；
+	实线三角指向父类；
+	空心菱形能分离而独立存在，是聚合；
+	实心菱形精密关联不可分，是组合；
+
+
+	java -D 配置系统属性
+	java -Dkey=value 参数优先级最高,会覆盖项目中配置的此项
+
+   
+
+    # JVM 命令
+    jmap （JVM Memory Map） 命令用于生成堆dump文件	
+
+    	jmap -dump:live,format=b,file=dump.hprof pid  #生成dump文件,可以使用 JvisualVm 打开
+    	jmap -heap pid  		 #打印heap的概要信息、GC使用的算法 
+    	jmap -finalizerinfo pid  #打印等待回收的对象信息
+    	jmap -histo  pid         #打印堆的对象统计 包括对象数、内存大小
+    	jmap -permstat pid       #Java堆内存的永久区的类加载器的智能统计信息
+
+
+    jstat (JVM statistics Monitoring)是用于监视虚拟机运行时状态信息的命令 可以显示出虚拟机进程中的类装载、内存、垃圾收集、JIT编译等运行数据
+
+    	jstat -class pid         #监视类装载、卸载数量、总空间以及耗费的时间
+    	jstat -gc pid            #垃圾回收堆的行为统计
+    	jstat -gccapacity pid    #同gc，会有堆各区域使用到的最大、最小空间
+    	jstat -gccause  pid      #各空间使用百分比,最近两次垃圾回收事件的原因
+
+    jstack 用于生成java虚拟机当前时刻的线程快照 ,栈信息
+    线程快照是当前java虚拟机内每一条线程正在执行的方法堆栈的集合 生成线程快照的主要目的是定位线程出现长时间停顿的原因 如线程间死锁、死循环、请求外部资源导致的长时间等待等
+
+    	jstack pid               #栈信息
+    	jstack -l pid            #除堆栈外，显示关于锁的附加信
+    	
+
 	
+	# 查看mysql wait_timeout
+	show global variables like 'wait_timeout';
+
+	#查看版本
+	select version();
+
+	5.6.29-76.2-log
+
+	#curl post
+	curl couponcenter.shengpay.com/coupon-center/coupon/v1/queryCouponAmount -X POST -H "Content-Type:application/json" -d '"app":"WIFI","merchantNo":"11842095","nonceStr":"bf0b7b4d","requestTime":"2018-11-02 10:48:27","sign":"hKDwfzdXZOWL/y2ATpyAoak7fBZ65LYrXNiaUIuP77SzXIk85UYryvU9sz8OVxijQWwUQ4nFV2o76yWtZk9uh39YvQ5OhwJ9xNWWUeIKXMGRE/7wZCInA3n+ZEPl9gc91YM5H9GdiGzdxg0T9yohEmLdkGEL68mT16yxt1KOZYJuU9qRvghuKzvTzEFolfCNHUuidvEt9v4ZYxYJhJZnxSSdbWhta7uM/DD8EaNu4oMj1fQqIqIqeMMgy7PA4j7J1OdmdFv6QlvAwlbzmZ7H125KRPwq/PY9ZQZbfGGS0DaKCyO/iYJVfKykLjs+MA3ZFv2V6SPKmBDrG1DkziJ5OQ==","uhId":"kttnsvtuqgncab8702b646484b3cee7f"'
 	
-	
-	
+
+	## 添加 .gitignore
+	git rm -r --cached . // 删除本地缓存
+	git add . // 添加要提交的文件
+	git commit -m 'update .gitignore' // 更新本地的缓存
+
+
+
+	## redis 设置密码(不重启,重启不恢复默认),进入各个实例进行设置
+	config set masterauth passwd123 
+    config set requirepass passwd123 
+    config rewrite 
+    
+    ## config set requirepass "" //取消密码
+
+
+
+    ### idea lombok 找不到方法错误
+    https://blog.csdn.net/xzp_12345/article/details/80268834
