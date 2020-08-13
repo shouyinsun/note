@@ -126,9 +126,9 @@ Ctrl+B 快速打开光标处的类或方法
 sout +tab: system.out.print
 psvm +tab: public static void main
 
-演出模式：alt+V快捷键，弹出View视图，然后选择Enter Presentation Mode
+演出模式：alt+V快捷键,弹出View视图,然后选择Enter Presentation Mode
 
-alt+1 把鼠标焦点定位到project视图里，然后直接使用ctrl+shift+left/right来移动分割线
+alt+1 把鼠标焦点定位到project视图里,然后直接使用ctrl+shift+left/right来移动分割线
 
 /*****ideal 注释模板 ***/
 	--类、接口注释
@@ -155,6 +155,8 @@ mvn versions:set -DnewVersion=DEV-2.0-SNAPSHOT
 依赖copy   dependency:copy-dependencies      (target/dependency)
 		   dependency:copy-dependencies -DoutputDirectory=lib 指定目录		   
 		   dependency:tree
+
+mvn dependency:resolve -Dclassifier=sources
 
 	   
 # IDEA  激活服务器 docker 	
@@ -201,7 +203,7 @@ innodb的数据文件本身就是索引文件,主索引叶子节点的data域保
 innodb索引,不应该使用过长的字段作为主键,因为所有的次索引都会引用主索引,会使次索引变得过大
 而且不应该使用非单调的字段作为索引,会有频繁的分裂调整,使用自增字段就是较好的选择
 
-table A 中 id(主键) 跟 ver是联合索引 (innodb引擎)
+table A 中 id(主键) 跟 ver 是联合索引 (innodb引擎)
 select id from A order by id;//很慢
 select id from A order by id ver;//很快
 innodb 叶节点直接存放数据,数据比较大,内存放不下,放在磁盘,id排序需要跨多个块,比较慢
@@ -312,11 +314,11 @@ ORDER BY
 	maxLD
 	
 --- 建索引的几大原则
-1.最左前缀匹配原则，非常重要的原则，mysql会一直向右匹配直到遇到范围查询(>、<、between、like)就停止匹配，比如a = 1 and b = 2 and c > 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整。
-2.=和in可以乱序，比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式
-3.尽量选择区分度高的列作为索引,区分度的公式是count(distinct col)/count(*)，表示字段不重复的比例，比例越大我们扫描的记录数越少
-4.索引列不能参与计算，保持列“干净”，比如from_unixtime(create_time) = ’2014-05-29’就不能使用到索引，原因很简单，b+树中存的都是数据表中的字段值，但进行检索时，需要把所有元素都应用函数才能比较，显然成本太大。所以语句应该写成create_time = unix_timestamp(’2014-05-29’);
-5.尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可
+1.最左前缀匹配原则,非常重要的原则,mysql会一直向右匹配直到遇到范围查询(>、<、between、like)就停止匹配,比如a = 1 and b = 2 and c > 3 and d = 4 如果建立(a,b,c,d)顺序的索引,d是用不到索引的,如果建立(a,b,d,c)的索引则都可以用到,a,b,d的顺序可以任意调整。
+2.=和in可以乱序,比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序,mysql的查询优化器会帮你优化成索引可以识别的形式
+3.尽量选择区分度高的列作为索引,区分度的公式是count(distinct col)/count(*),表示字段不重复的比例,比例越大我们扫描的记录数越少
+4.索引列不能参与计算,保持列“干净”,比如from_unixtime(create_time) = ’2014-05-29’就不能使用到索引,原因很简单,b+树中存的都是数据表中的字段值,但进行检索时,需要把所有元素都应用函数才能比较,显然成本太大。所以语句应该写成create_time = unix_timestamp(’2014-05-29’);
+5.尽量的扩展索引,不要新建索引。比如表中已经有a的索引,现在要加(a,b)的索引,那么只需要修改原来的索引即可
 	
 	
 -- ideal vm配置
@@ -526,6 +528,7 @@ select  AES_DECRYPT(FROM_BASE64(SUBSTRING(mobile,5)),'1fi;qPa7utddahWy')  FROM `
 	
 	/**5s刷新一次**/
 	watch -n 5 -d 'pstree -p 43753 |wc -l' 
+
 	
 	
 	#统计80端口连接数
@@ -539,6 +542,14 @@ select  AES_DECRYPT(FROM_BASE64(SUBSTRING(mobile,5)),'1fi;qPa7utddahWy')  FROM `
 	
 	#统计TIME_WAIT
 	watch -n 5 -d 'netstat -na|grep TIME_WAIT|wc -l'
+	watch -n 5 -d 'netstat -na|grep CLOSE_WAIT|wc -l'
+	watch -n 5 -d 'netstat -na|grep ESTABLISHED|wc -l'
+
+	查看不同状态的连接数数量
+	netstat -an | awk '/^tcp/ {++y[$NF]} END {for(w in y) print w, y[w]}'
+
+    查看每个ip建立的ESTABLISHED状态的连接数
+	netstat -nat|grep ESTABLISHED|awk '{print$5}'|awk -F : '{print$1}'|sort|uniq -c|sort -rn
 
 	#查出哪个IP地址连接最多
 	netstat -na|grep ESTABLISHED|awk {print $5}|awk -F: {print $1}|sort|uniq -c|sort -r +0n
@@ -589,7 +600,10 @@ select  AES_DECRYPT(FROM_BASE64(SUBSTRING(mobile,5)),'1fi;qPa7utddahWy')  FROM `
 	
 	/**查看端口占用**/ 
 	netstat -ano|findstr "9091" 知道pid,资源管理器中干掉 //window 
+	netstat -tunpl|grep '9091' 
 	netstat -na|grep -i "9080"|grep ESTABLISHED|wc -l
+
+	netstat -tunpl|grep '8080' 
 	
 	/** os版本 **/
 	cat /proc/version 
@@ -699,8 +713,8 @@ select  AES_DECRYPT(FROM_BASE64(SUBSTRING(mobile,5)),'1fi;qPa7utddahWy')  FROM `
 	
 	# OuterClass.this
 	实际上我们代指当前类对象的this是个简写形式,完整的形式就是 类名字.this
-	对当前类对象的引用，可以用xxClass.this，也可以直接用this。
-    内部内对当前外部类OuterClass的类对象引用就只能用OuterClass.this，不能用this
+	对当前类对象的引用,可以用xxClass.this,也可以直接用this。
+    内部内对当前外部类OuterClass的类对象引用就只能用OuterClass.this,不能用this
 
 
     # UML 类图
@@ -708,8 +722,8 @@ select  AES_DECRYPT(FROM_BASE64(SUBSTRING(mobile,5)),'1fi;qPa7utddahWy')  FROM `
 	实线箭头指向关联；
 	虚线三角指向接口；
 	实线三角指向父类；
-	空心菱形能分离而独立存在，是聚合；
-	实心菱形精密关联不可分，是组合；
+	空心菱形能分离而独立存在,是聚合；
+	实心菱形精密关联不可分,是组合；
 
 
 	java -D 配置系统属性
@@ -731,14 +745,19 @@ select  AES_DECRYPT(FROM_BASE64(SUBSTRING(mobile,5)),'1fi;qPa7utddahWy')  FROM `
 
     	jstat -class pid         #监视类装载、卸载数量、总空间以及耗费的时间
     	jstat -gc pid            #垃圾回收堆的行为统计
-    	jstat -gccapacity pid    #同gc，会有堆各区域使用到的最大、最小空间
+    	jstat -gccapacity pid    #同gc,会有堆各区域使用到的最大、最小空间
     	jstat -gccause  pid      #各空间使用百分比,最近两次垃圾回收事件的原因
 
     jstack 用于生成java虚拟机当前时刻的线程快照 ,栈信息
     线程快照是当前java虚拟机内每一条线程正在执行的方法堆栈的集合 生成线程快照的主要目的是定位线程出现长时间停顿的原因 如线程间死锁、死循环、请求外部资源导致的长时间等待等
 
     	jstack pid               #栈信息
-    	jstack -l pid            #除堆栈外，显示关于锁的附加信
+    	jstack -l pid            #除堆栈外,显示关于锁的附加信
+
+
+
+    # 生成gc日志
+    -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc: /data/logs/app/gclogs	
     	
 
 	
@@ -807,3 +826,152 @@ select  AES_DECRYPT(FROM_BASE64(SUBSTRING(mobile,5)),'1fi;qPa7utddahWy')  FROM `
  
 	redis 127.0.0.1:6379> EVALSHA "232fd51614574cf0867b83d384a5e898cfd24e5a" 0
 	"hello moto"
+
+
+
+
+	### vmstat   
+	vmstat 2  5  2s一次,一共取样5次
+	Virtual Meomory Statistics（虚拟内存统计）的缩写可对操作系统的虚拟内存、进程、CPU活动进行监控。是对系统的整体情况进行统计,无法对某个进程进行深入分析
+	物理内存就是系统硬件提供的内存大小,是真正的内存,
+	相对于物理内存,在linux下还有一个虚拟内存的概念,虚拟内存就是为了满足物理内存的不足而提出的策略,
+	它是利用磁盘空间虚拟出的一块逻辑内存,用作虚拟内存的磁盘空间被称为交换空间（Swap Space）。
+	linux会在物理内存不足时,使用交换分区的虚拟内存,更详细的说,就是内核会将暂时不用的内存块信息写到交换空间,
+	这样以来,物理内存得到了释放,这块内存就可以用于其它目的,当需要用到原始的内容时,这些信息会被重新从交换空间读入物理内存
+
+	Procs（进程）：
+	  r: 运行队列中进程数量
+	  b： 等待IO的进程数量
+	Memory（内存）：
+	  swpd: 使用虚拟内存大小
+	  free: 可用内存大小
+	  buff: 用作缓冲的内存大小
+	  cache: 用作缓存的内存大小
+	Swap：
+	  si: 每秒从交换区写到内存的大小
+	  so: 每秒写入交换区的内存大小
+	IO：（现在的Linux版本块的大小为1024bytes）
+	  bi: 每秒读取的块数
+	  bo: 每秒写入的块数
+	系统：
+	  in: 每秒中断数,包括时钟中断。【interrupt】
+	  cs: 每秒上下文切换数。        【count/second】
+
+	CPU（以百分比表示）：
+	  us: 用户进程执行时间(user time)
+	  sy: 系统进程执行时间(system time)
+	  id: 空闲时间(包括IO等待时间),中央处理器的空闲时间 。以百分比表示。
+	  wa: 等待IO时间
+
+
+
+	### iostat  对系统的磁盘操作活动进行监视,它的特点是汇报磁盘活动统计情况,同时也会汇报出CPU使用情况
+	iostat 1 10 一秒一次,10次
+	
+		## avg-cpu	
+			%user	CPU在用户态执行进程的时间百分比。
+			%nice	CPU在用户态模式下,用于nice操作,所占用CPU总时间的百分比
+			%system	CPU处在内核态执行进程的时间百分比
+			%iowait	CPU用于等待I/O操作占用CPU总时间的百分比
+			%steal	管理程序(hypervisor)为另一个虚拟进程提供服务而等待虚拟CPU的百分比
+			%idle	CPU空闲时间百分比
+
+		## device	
+			Device	设备名称
+			tps	每秒向磁盘设备请求数据的次数,包括读、写请求,为rtps与wtps的和
+			Blk_read/s	Indicate the amount of data read from the device expressed in a number of blocks per second.
+			Blk_wrtn/s	Indicate the amount of data written to the device expressed in a number of blocks per second.
+			Blk_read	取样时间间隔内读扇区总数量
+			Blk_wrtn	取样时间间隔内写扇区总数量
+
+
+
+
+
+
+	#系统优化
+	系统优化的三个基本方向：性能（Performance）、稳定性（Stability）、可维护性（Maintainability）
+		
+		##性能
+
+			###简化
+			业务流程精简,代码、架构优化,减少不必要的抽象、分层,数据清洗、提取、聚合
+
+			###并行
+			多线程、分布式、
+
+			###异步
+			消息队列 + 任务线程 + 通知机制
+
+			###批量
+			批量操作,减少单次操作的固有开销
+
+			###时间空间互换
+			空间换时间：缓存、CDN、索引、只读副本（replication
+			时间换空间：数据压缩、bitmap
+
+			###数据结构与算法优化
+			多了解一些数据结构：Skip list、Bloom filter、Time Wheel
+			多了解一些算法思想：分治、贪心、动态规划
+
+			###池化 & 局部化
+			池化:减少资源创建和销毁开销
+			局部化:避免共享资源竞争开销,TLAB(Thread Local Allocation Buffer)、多级缓存
+
+			###其他手段
+			内核、协议、依赖升级
+			sql优化
+			参数调优
+			业务特征定制
+
+		##稳定性
+
+			###避免单点
+			集群、多副本、多机房容灾
+
+			###流控/限流
+			rateLimiter、信号量、sentinel
+
+			###熔断
+			自动绕开异常服务并检测恢复状态 
+
+			###降级
+			关闭非关键功能、返回降级内容
+
+			###超时/重试
+			超时时间设置、设置缺省值
+			重试、去重、幂等、异步重试、指数退避
+
+			###资源隔离
+			防止资源被部分异常流量耗尽
+			线程池隔离、队列划分、独立集群,注意处理优先级和资源分配比例
+
+			###安全生产
+			开关配置、代码review、灰度发布、回滚机制
+
+		##可维护性
+
+			###编码规范
+
+			###代码重构
+
+			###数据驱动
+			数据说话
+
+			###技术演进
+
+
+
+	#http错误码
+
+		499是由于超过客户端设置的请求超时时间,客户端主动关闭连接,服务器code为499。
+
+		500是由于代码语法错误,导致CGI执行错误并且会把错误结果通知服务器,服务器则报500。
+
+		502是由于CGI由于在自身的执行时间要求内无法按时完成,则无法返回给服务器正常响应,此时服务器会返回502。
+
+		504是CGI在服务器设置的超时时间内无法按时返回响应,服务器则返回504
+
+
+
+
